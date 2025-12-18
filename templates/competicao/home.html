@@ -1,0 +1,17 @@
+{% extends 'base.html' %} {% block content %}
+
+<h1>Essa é a home</h1>
+
+<h2>é onde listamos as salas</h2>
+
+{% if salas %}
+    <ul>
+        {% for sala in salas  %}
+            <li>{{ sala.nome }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Nenhuma sala disponível</p>
+{% endif %}
+
+{% endblock %}

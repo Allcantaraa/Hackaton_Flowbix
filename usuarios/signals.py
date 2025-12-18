@@ -10,4 +10,5 @@ def criar_perfil(sender, instance, created, **kwargs) :
         
 @receiver(post_save, sender=User)
 def salvar_perfil(sender, instance, **kwargs):
-    instance.perfil.save()
+    if hasattr(instance, 'perfil'):
+        instance.perfil.save()
