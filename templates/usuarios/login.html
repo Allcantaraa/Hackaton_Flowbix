@@ -10,4 +10,6 @@
     <form method='POST'>
         {% csrf_token %} {{ form.as_p }} <button type='submit'>Entrar</button>
     </form>
+
+    <p>Não tem conta? <a href="{% url "cadastro" %}">Criar Conta</a> </p>
 {% endblock %}
