@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="perfil-container">
+    <h2>Meu Perfil</h2>
+    <img src="{{ user.perfil.foto.url }}" alt="Foto de Perfil" style="width: 150px; border-radius: 50%;">
+    
+    <form method="POST" enctype="multipart/form-data"> {% csrf_token %}
+        <h3>Dados Pessoais</h3>
+        {{ u_form.as_p }}
+        
+        <h3>Alterar Foto</h3>
+        {{ p_form.as_p }}
+        
+        <button type="submit">Salvar Alterações</button>
+    </form>
+</div>
+{% endblock %}
