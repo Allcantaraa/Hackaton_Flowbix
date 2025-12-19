@@ -7,7 +7,7 @@
 {% if salas %}
     <ul>
         {% for sala in salas  %}
-            <li>{{ sala.nome }}</li>
+            <li>{{ sala.nome }} - <a href="{% url 'detalhes_sala' sala.id %}">Acessar Sala</a></li>
         {% endfor %}
     </ul>
     {% else %}

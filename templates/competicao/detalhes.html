@@ -1,0 +1,72 @@
+<hr>
+
+{% if request.user in sala.participantes.all %}
+
+    <h3>Chat da sala: {{ sala.nome }}</h3>
+
+    <div id="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
+        </div>
+
+    <div id="chat-form">
+        {% csrf_token %}
+        <input type="text" id="msg-texto" placeholder="Digite sua mensagem..." style="width: 80%;">
+        <button id="btn-enviar">Enviar</button>
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 20px; border: 2px dashed #ccc;">
+        <h3>Você ainda não está participando desta competição.</h3>
+        <p>Para enviar mensagens e ver os desafios, você precisa se inscrever.</p>
+        <a href="{% url 'inscrever_sala' sala.id %}" 
+           style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+           Participar da Sala
+        </a>
+    </div>
+{% endif %}
+
+<script>
+    const salaId = "{{ sala.id }}";
+    const chatBox = document.getElementById('chat-box');
+    const btnEnviar = document.getElementById('btn-enviar');
+    const inputTexto = document.getElementById('msg-texto');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    function buscarMensagens() {
+        fetch(`/chat/mensagens/${salaId}/`)
+            .then(response => response.json())
+            .then(data => {
+                chatBox.innerHTML = '';
+                data.mensagens.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.style.marginBottom = "5px";
+                    div.innerHTML = `<strong>${msg.usuario}</strong> [${msg.data}]: ${msg.texto}`;
+                    chatBox.appendChild(div);
+                });
+
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+    }
+
+    btnEnviar.onclick = function() {
+        const texto = inputTexto.value;
+        if (!texto) return;
+
+        const formData = new FormData();
+        formData.append('texto', texto);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        fetch(`/chat/enviar/${salaId}/`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                inputTexto.value = '';
+                buscarMensagens();
+            }
+        });
+    };
+
+    setInterval(buscarMensagens, 3000);
+
+    buscarMensagens();
+</script>
