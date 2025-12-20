@@ -5,13 +5,51 @@
     <h3>Chat da sala: {{ sala.nome }}</h3>
 
     <div id="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
-        </div>
+    </div>
 
     <div id="chat-form">
         {% csrf_token %}
         <input type="text" id="msg-texto" placeholder="Digite sua mensagem..." style="width: 80%;">
         <button id="btn-enviar">Enviar</button>
     </div>
+
+    <hr>
+
+    <div id="entrega-container" style="margin-top: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+        <h3>🚀 Entrega da Solução</h3>
+
+        {% if entrega %}
+            <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px;">
+                <p>✅ <strong>Projeto entregue pelo grupo: {{ entrega.grupo.nome }}</strong></p>
+                <p>Link: <a href="{{ entrega.link_projeto }}" target="_blank" style="color: #155724; font-weight: bold;">{{ entrega.link_projeto }}</a></p>
+                <small>Enviado em: {{ entrega.data_entrega|date:"d/m H:i" }}</small>
+            </div>
+        {% elif liderando %}
+            <form method="POST">
+                {% csrf_token %}
+                <p>Você é o <strong>Cabeça de Chave</strong> do grupo: <strong>{{ liderando.nome }}</strong></p>
+                
+                <div style="margin-bottom: 10px;">
+                    <label>Link da Solução (Zabbix, Grafana, GitHub, etc):</label><br>
+                    <input type="url" name="link_projeto" placeholder="https://..." required style="width: 100%; padding: 8px;">
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <label>Comentários Adicionais:</label><br>
+                    <textarea name="comentarios" rows="3" style="width: 100%; padding: 8px;" placeholder="Explique brevemente sua solução..."></textarea>
+                </div>
+
+                <button type="submit" name="btn_entrega" style="background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                    Realizar Entrega Oficial
+                </button>
+            </form>
+        {% else %}
+            <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px;">
+                <p>Aguardando a entrega da solução pelo seu <strong>Cabeça de Chave</strong>.</p>
+            </div>
+        {% endif %}
+    </div>
+
 {% else %}
     <div style="text-align: center; padding: 20px; border: 2px dashed #ccc;">
         <h3>Você ainda não está participando desta competição.</h3>
@@ -29,6 +67,7 @@
     const btnEnviar = document.getElementById('btn-enviar');
     const inputTexto = document.getElementById('msg-texto');
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
     function buscarMensagens() {
         fetch(`/chat/mensagens/${salaId}/`)
             .then(response => response.json())
@@ -40,7 +79,6 @@
                     div.innerHTML = `<strong>${msg.usuario}</strong> [${msg.data}]: ${msg.texto}`;
                     chatBox.appendChild(div);
                 });
-
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
     }
@@ -67,6 +105,5 @@
     };
 
     setInterval(buscarMensagens, 3000);
-
     buscarMensagens();
 </script>

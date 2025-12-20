@@ -32,7 +32,7 @@ class Grupo(models.Model) :
     nome = models.CharField(max_length=100, null=False, blank=False)
     tema = models.ForeignKey(Tema, on_delete=models.SET_NULL, null=True, blank=True)
     membros = models.ManyToManyField(User, related_name='meus_grupos')
-    cabeca_de_chave = models.BooleanField(default=False)
+    lider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='liderando', verbose_name="Cabeça de Chave")
     pontuacao_total = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     
     def __str__(self):
@@ -49,3 +49,13 @@ class Avaliacao(models.Model):
 
     def __str__(self):
         return f"Nota {self.nota} - {self.grupo.nome}"
+    
+
+class Entrega(models.Model) :
+    grupo = models.OneToOneField(Grupo, on_delete=models.CASCADE, related_name='entrega')
+    link_projeto = models.URLField(max_length=1000)
+    comentarios = models.TextField(blank=True, null=True)
+    data_entrega = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Entrega do Grupo: {self.grupo.nome}"

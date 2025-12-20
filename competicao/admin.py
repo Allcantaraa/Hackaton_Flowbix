@@ -12,8 +12,8 @@ class TemaAdmin(admin.ModelAdmin):
 
 @admin.register(Grupo)
 class GrupoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'sala', 'tema', 'cabeca_de_chave', 'pontuacao_total')
-    list_filter = ('sala', 'cabeca_de_chave')
+    list_display = ('nome', 'sala', 'tema', 'lider', 'pontuacao_total')
+    list_filter = ('sala', 'lider')
 
 @admin.register(Avaliacao)
 class AvaliacaoAdmin(admin.ModelAdmin):
