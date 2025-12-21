@@ -32,11 +32,9 @@ def detalhes_sala(request, sala_id):
     grupo_liderado = Grupo.objects.filter(sala=sala, lider=request.user).first()
     meu_grupo = Grupo.objects.filter(sala=sala, membros=request.user).first()
     
-    # --- LÓGICA DE VERIFICAÇÃO DE TEMPO ---
     tempo_esgotado = False
     if sala.status == 'andamento' and sala.inicio_atividades:
-        # Calculamos o fim: inicio + (minutos * 60 segundos)
-        fim_atividades = sala.inicio_atividades + timezone.timedelta(minutes=sala.duracao_horas) # 'duracao_horas' agora agirá como minutos
+        fim_atividades = sala.inicio_atividades + timezone.timedelta(minutes=sala.duracao_horas)
         if timezone.now() > fim_atividades:
             tempo_esgotado = True
 
@@ -45,7 +43,6 @@ def detalhes_sala(request, sala_id):
         entrega = meu_grupo.entrega
     
     if request.method == 'POST' and 'btn_entrega' in request.POST:
-        # SÓ PERMITE SE NÃO ESTIVER ESGOTADO
         if grupo_liderado and not tempo_esgotado:
             link = request.POST.get('link_projeto')
             comentario = request.POST.get('comentarios')
@@ -65,7 +62,7 @@ def detalhes_sala(request, sala_id):
         'liderando': grupo_liderado,
         'meu_grupo': meu_grupo,
         'entrega': entrega,
-        'tempo_esgotado': tempo_esgotado # Enviamos para o template
+        'tempo_esgotado': tempo_esgotado
     }
     return render(request, 'competicao/detalhes.html', contexto)
 
@@ -83,10 +80,8 @@ def realizar_sorteio(request, sala_id):
         messages.error(request, "Cadastre temas no Admin antes de realizar o sorteio.")
         return redirect('detalhes_sala', sala_id=sala.id)
 
-    # 1. Limpa grupos antigos
     sala.grupos.all().delete()
     
-    # 2. Define tamanho dos grupos (Ajustado para 2 para separar pessoas em testes)
     tamanho_max = 2 
     random.shuffle(participantes)
     num_grupos = (len(participantes) + tamanho_max - 1) // tamanho_max
