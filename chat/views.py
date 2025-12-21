@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from competicao.models import Sala
+from django.utils.timezone import localtime
 
 @login_required
 def buscar_mensagens(request, sala_id) :
@@ -15,7 +16,7 @@ def buscar_mensagens(request, sala_id) :
         dados.append({
             'usuario': msg.usuario.username,
             'texto': msg.texto,
-            'data': msg.data_envio.strftime('%H:%M')
+            'data': localtime(msg.data_envio).strftime('%H:%M')
         })
         
     return JsonResponse({'mensagens': dados})

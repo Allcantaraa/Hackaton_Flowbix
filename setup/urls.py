@@ -8,9 +8,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', include('usuarios.urls')),
     path('', lista_salas, name='home'),
-    path('sala/<int:sala_id>/', detalhes_sala, name='detalhes_sala'),
+    path('sala/', include('competicao.urls')),
     path('chat/', include('chat.urls')),
-    path('sala/<int:sala_id>/inscrever/', inscrever_sala, name='inscrever_sala')
+    
 ]
 
 if settings.DEBUG :
