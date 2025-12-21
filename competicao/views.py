@@ -37,6 +37,8 @@ def detalhes_sala(request, sala_id):
         fim_atividades = sala.inicio_atividades + timezone.timedelta(minutes=sala.duracao_horas)
         if timezone.now() > fim_atividades:
             tempo_esgotado = True
+            sala.status = 'finalizada'
+            sala.save()
 
     entrega = None
     if meu_grupo and hasattr(meu_grupo, 'entrega'):
@@ -53,6 +55,7 @@ def detalhes_sala(request, sala_id):
             messages.success(request, 'Projeto entregue com sucesso!')
         elif tempo_esgotado:
             messages.error(request, 'O tempo acabou! Não é mais possível realizar entregas.')
+            
             
         return redirect('detalhes_sala', sala_id=sala.id)
     
