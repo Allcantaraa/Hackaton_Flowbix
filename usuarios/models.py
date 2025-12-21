@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 class Perfil(models.Model) :
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
     foto = models.ImageField(upload_to='avatares/', default='avatares/default.png', blank=True)
+    eh_jurado = models.BooleanField(default=False, verbose_name="É Jurado?")
     
     def __str__(self):
         return f'Perfil do {self.usuario.username}'

@@ -3,8 +3,8 @@ from .models import Perfil
 
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
-    # Exibe o nome do usuário e o caminho da foto na lista do Admin
-    list_display = ('usuario', 'foto')
+    list_display = ('usuario', 'foto', 'eh_jurado')
     
-    # Adiciona uma barra de pesquisa pelo nome do usuário
+    list_editable = ('eh_jurado',)
+    
     search_fields = ('usuario__username',)

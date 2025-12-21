@@ -1,215 +1,165 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: 'Segoe UI', Tahoma, sans-serif; color: #333;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: sans-serif;">
 
     {% if messages %}
         {% for message in messages %}
-            <div style="padding: 15px; margin-bottom: 20px; border-radius: 4px; 
-                        {% if message.tags == 'error' %} color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb;
-                        {% else %} color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; {% endif %}">
+            <div style="padding: 15px; margin-bottom: 20px; border-radius: 4px; {% if message.tags == 'error' %} background: #f8d7da; color: #721c24; {% else %} background: #d4edda; color: #155724; {% endif %}">
                 {{ message }}
             </div>
         {% endfor %}
     {% endif %}
 
-    <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
+    <header style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
         <div>
-            <h1 style="margin: 0; color: #2c3e50;">{{ sala.nome }}</h1>
-            <p style="margin: 5px 0 0 0; color: #7f8c8d;">{{ sala.descricao }}</p>
+            <h1 style="margin: 0;">{{ sala.nome }}</h1>
+            <p style="color: #666;">{{ sala.descricao }}</p>
         </div>
         <div style="text-align: right;">
-            <span style="display: block; font-size: 0.85rem; color: #95a5a6; font-weight: bold;">STATUS DA SALA</span>
-            <strong style="font-size: 1.1rem; color: #3498db; text-transform: uppercase;">{{ sala.get_status_display }}</strong>
+            <strong style="display: block; color: #3498db; text-transform: uppercase; margin-bottom: 10px;">{{ sala.get_status_display }}</strong>
+            
+            {% if user.perfil.eh_jurado %}
+                {% if avaliacoes_concluidas %}
+                    <span style="background: #a0aec0; color: white; padding: 10px 18px; border-radius: 5px; font-weight: bold; font-size: 0.9rem; cursor: not-allowed;">🔒 Notas Encerradas</span>
+                {% else %}
+                    <a href="{% url 'painel_jurado' sala.id %}" style="background: #6b46c1; color: white; padding: 10px 18px; text-decoration: none; border-radius: 5px; font-weight: bold;">👨‍⚖️ Avaliar Projetos</a>
+                {% endif %}
+            {% endif %}
         </div>
     </header>
 
     {% if user.is_staff %}
-    <section style="background: #fff3cd; border: 1px solid #ffeeba; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-        <h4 style="margin: 0 0 15px 0; color: #856404;">🛠️ Gestão do Administrador</h4>
+    <section style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <h4 style="margin-top: 0;">⚙️ Admin</h4>
         {% if sala.status == 'aberta' %}
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <p style="margin: 0;">Inscrições prontas? Realize o sorteio das equipes e temas:</p>
-                <a href="{% url 'realizar_sorteio' sala.id %}" style="background: #e67e22; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Realizar Sorteio Geral</a>
-            </div>
+            <a href="{% url 'realizar_sorteio' sala.id %}" style="background: #e67e22; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px;">Sorteio Geral</a>
         {% elif sala.status == 'sorteio' %}
-            <form method="POST" action="{% url 'iniciar_sala' sala.id %}" style="display: flex; align-items: center; gap: 15px;">
+            <form method="POST" action="{% url 'iniciar_sala' sala.id %}" style="display: inline-flex; gap: 10px;">
                 {% csrf_token %}
-                <p style="margin: 0;">Defina o tempo de prova:</p>
-                <label>Duração (Minutos):</label>
-                <input type="number" name="duracao_horas" value="60" min="1" style="width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                <button type="submit" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">🚀 Iniciar Hackaton</button>
+                <input type="number" name="duracao_horas" value="60" style="width: 60px;"> Minutos
+                <button type="submit" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">🚀 Iniciar</button>
             </form>
-        {% else %}
-            <p style="margin: 0; color: #856404;">O evento está em andamento ou finalizado.</p>
         {% endif %}
     </section>
     {% endif %}
 
-    {% if request.user not in sala.participantes.all and sala.status == 'aberta' %}
+    {% if not user.perfil.eh_jurado and request.user not in sala.participantes.all and sala.status == 'aberta' %}
     <div style="text-align: center; padding: 30px; background: #f0f7ff; border: 2px dashed #3498db; border-radius: 10px; margin-bottom: 30px;">
-        <h3>Deseja entrar na competição?</h3>
-        <p>Você está visualizando a sala. Clique abaixo se quiser ser sorteado em um grupo como competidor.</p>
+        <h3>Deseja competir?</h3>
         <a href="{% url 'inscrever_sala' sala.id %}" style="background: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Participar como Competidor</a>
     </div>
     {% endif %}
 
-    {% if sala.status == 'andamento' and sala.inicio_atividades %}
-    <div id="cronometro-box" style="background: #2c3e50; color: #2ecc71; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
-        <small style="display: block; color: #bdc3c7; margin-bottom: 5px;">TEMPO RESTANTE</small>
-        <div id="contagem" style="font-size: 3rem; font-family: monospace; font-weight: bold;">--:--:--</div>
-    </div>
+    {% if sala.status == 'andamento' %}
+        <div style="background: #2c3e50; color: #2ecc71; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
+            <div id="contagem" style="font-size: 3rem; font-family: monospace; font-weight: bold;">--:--:--</div>
+        </div>
+    {% elif sala.status == 'finalizada' %}
+        <div style="background: #fefcbf; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 30px; border: 2px solid #faf089;">
+            <h2 style="margin-top: 0;">🏁 Hackaton Encerrado!</h2>
+            <a href="{% url 'ranking_sala' sala.id %}" style="background: #2d3748; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">🏆 VER RANKING FINAL</a>
+        </div>
     {% endif %}
 
-    {% if request.user in sala.participantes.all or user.is_staff %}
-    <section style="margin-bottom: 40px; background: white; border: 1px solid #e1e8ed; border-radius: 8px; overflow: hidden;">
-        <div style="background: #f8f9fa; padding: 15px; border-bottom: 1px solid #e1e8ed;">
-            <h3 style="margin: 0; font-size: 1.1rem;">📊 Monitor de Equipes e Participantes</h3>
-        </div>
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="text-align: left; background: #fdfdfd; border-bottom: 2px solid #eee;">
-                    <th style="padding: 12px 15px;">Equipe</th>
-                    <th style="padding: 12px 15px;">Membros do Time</th>
-                    <th style="padding: 12px 15px;">Tema</th>
-                    <th style="padding: 12px 15px; text-align: center;">Entrega</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for gp in todos_os_grupos %}
-                <tr style="border-bottom: 1px solid #f1f1f1; {% if gp == meu_grupo %}background: #f0f7ff; border-left: 4px solid #3498db;{% endif %}">
-                    <td style="padding: 12px 15px;">
-                        <strong>{{ gp.nome }}</strong>
-                    </td>
-                    <td style="padding: 12px 15px; font-size: 0.9rem;">
-                        ⭐ <strong>{{ gp.lider.username }}</strong>, 
-                        {{ gp.membros.all|join:", " }}
-                    </td>
-                    <td style="padding: 12px 15px;">{{ gp.tema.titulo|default:"-" }}</td>
-                    <td style="padding: 12px 15px; text-align: center;">
-                        {% if gp.entrega %}
-                            <span style="color: #27ae60; font-weight: bold;">✅ OK</span>
-                        {% else %}
-                            <span style="color: #95a5a6;">⏳ Pendente</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
+    {% if sala.status != 'aberta' %}
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; border: 1px solid #eee;">
+        <thead>
+            <tr style="background: #f8f9fa; text-align: left;">
+                <th style="padding: 12px;">Equipe</th>
+                <th style="padding: 12px;">Integrantes</th>
+                <th style="padding: 12px;">Tema</th>
+                <th style="padding: 12px; text-align: center;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for gp in todos_os_grupos %}
+            <tr style="border-bottom: 1px solid #eee; {% if gp == meu_grupo %} background: #f0f7ff; {% endif %}">
+                <td style="padding: 12px;"><strong>{{ gp.nome }}</strong></td>
+                <td style="padding: 12px; font-size: 0.85rem;">⭐ <b>{{ gp.lider.username }}</b>, {{ gp.membros.all|join:", " }}</td>
+                <td style="padding: 12px;">{{ gp.tema.titulo|default:"-" }}</td>
+                <td style="padding: 12px; text-align: center;">{% if gp.entrega %}✅{% else %}⏳{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-    <div style="display: grid; grid-template-columns: 1fr 400px; gap: 30px;">
-        
-        <div style="background: white; border: 1px solid #e1e8ed; padding: 25px; border-radius: 8px;">
-            <h3>🚀 Portal de Entrega</h3>
-            {% if tempo_esgotado %}
-                <div style="background: #fff5f5; border: 2px solid #feb2b2; padding: 20px; border-radius: 8px; text-align: center;">
-                    <p style="color: #c53030; font-weight: bold; font-size: 1.2rem; margin: 0;">🚫 PRAZO ENCERRADO</p>
-                    <p style="margin: 5px 0 0 0;">Não são mais permitidas novas submissões.</p>
-                </div>
-            {% elif entrega %}
-                <div style="border: 2px solid #27ae60; background: #f0fff4; padding: 20px; border-radius: 8px;">
-                    <p style="color: #27ae60; font-weight: bold; margin-top: 0;">✓ PROJETO ENTREGUE!</p>
-                    <p>Link: <a href="{{ entrega.link_projeto }}" target="_blank" style="word-break: break-all;">{{ entrega.link_projeto }}</a></p>
-                </div>
-            {% elif liderando %}
-                {% if sala.status == 'andamento' %}
+    <div style="display: grid; grid-template-columns: 1fr 400px; gap: 20px;">
+        <div style="background: white; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+            <h3>🚀 Entrega</h3>
+            {% if sala.status == 'andamento' %}
+                {% if entrega %}
+                    <p style="color: green;">✓ Seu grupo já realizou a entrega.</p>
+                {% elif liderando %}
                     <form method="POST">
                         {% csrf_token %}
-                        <p style="background: #ebf8ff; color: #2c5282; padding: 10px; border-radius: 4px; font-size: 0.9rem;">
-                            📢 <strong>Líder:</strong> Envie o link final da sua equipe abaixo.
-                        </p>
-                        <input type="url" name="link_projeto" placeholder="URL da Solução" required style="width: 100%; padding: 12px; border: 1px solid #ddd; margin-bottom: 15px; border-radius: 5px; box-sizing: border-box;">
-                        <textarea name="comentarios" rows="3" placeholder="Comentários técnicos..." style="width: 100%; padding: 12px; border: 1px solid #ddd; margin-bottom: 15px; border-radius: 5px; box-sizing: border-box;"></textarea>
-                        <button type="submit" name="btn_entrega" style="width: 100%; background: #3182ce; color: white; border: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer;">REALIZAR ENTREGA</button>
+                        <input type="url" name="link_projeto" placeholder="Link do Projeto" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
+                        <textarea name="comentarios" placeholder="Notas técnicas..." style="width: 100%; padding: 10px; margin-bottom: 10px;"></textarea>
+                        <button type="submit" name="btn_entrega" style="width: 100%; background: #3182ce; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer;">SUBMETER</button>
                     </form>
                 {% else %}
-                    <p style="text-align: center; color: #718096; padding: 20px; border: 1px dashed #edf2f7;">Aguardando o início oficial do cronômetro.</p>
+                    <p>Aguardando o líder <b>{{ meu_grupo.lider.username }}</b>.</p>
                 {% endif %}
             {% else %}
-                <p style="color: #718096; text-align: center; padding: 20px; border: 1px dashed #edf2f7;">
-                    Aguarde a entrega pelo seu líder oficial.
-                </p>
+                <p style="color: #999;">O portal está fechado.</p>
             {% endif %}
         </div>
 
-        <div style="background: white; border: 1px solid #e1e8ed; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; height: 500px;">
-            <h3 style="margin-top: 0; font-size: 1rem;">💬 Chat da Sala</h3>
-            <div id="chat-box" style="flex-grow: 1; overflow-y: auto; background: #f9f9f9; padding: 10px; margin-bottom: 15px; border: 1px solid #eee; border-radius: 4px;"></div>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="msg-texto" placeholder="Sua mensagem..." style="flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                <button id="btn-enviar" style="background: #2d3748; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer;">Enviar</button>
+        <div style="background: white; border: 1px solid #ddd; padding: 15px; border-radius: 8px; height: 400px; display: flex; flex-direction: column;">
+            <h3>💬 Chat</h3>
+            <div id="chat-box" style="flex-grow: 1; overflow-y: auto; background: #f9f9f9; padding: 10px; border: 1px solid #eee; margin-bottom: 10px;"></div>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="msg-texto" placeholder="Texto..." style="flex-grow: 1; padding: 8px;">
+                <button id="btn-enviar" style="background: #2d3748; color: white; border: none; padding: 8px; cursor: pointer;">Enviar</button>
             </div>
         </div>
     </div>
     {% endif %}
-
 </div>
 
 <script>
-    const salaId = "{{ sala.id }}";
-    const chatBox = document.getElementById('chat-box');
-    const btnEnviar = document.getElementById('btn-enviar');
-    const inputTexto = document.getElementById('msg-texto');
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-
-    function buscarMensagens() {
-        fetch(`/chat/mensagens/${salaId}/`)
-            .then(res => res.json())
-            .then(data => {
-                chatBox.innerHTML = '';
-                data.mensagens.forEach(msg => {
-                    const div = document.createElement('div');
-                    div.style.marginBottom = "10px";
-                    div.innerHTML = `<small style="color:#888;">${msg.data} - <strong>${msg.usuario}</strong></small>
-                                     <div style="background:#fff; padding:8px; border: 1px solid #eee; margin-top:3px; border-radius:4px; font-size:0.9rem;">${msg.texto}</div>`;
-                    chatBox.appendChild(div);
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
-    }
-
-    if (btnEnviar) {
-        btnEnviar.onclick = function() {
-            const texto = inputTexto.value;
-            if (!texto) return;
-            const formData = new FormData();
-            formData.append('texto', texto);
-            formData.append('csrfmiddlewaretoken', csrfToken);
-            fetch(`/chat/enviar/${salaId}/`, { method: 'POST', body: formData })
-                .then(() => { inputTexto.value = ''; buscarMensagens(); });
-        };
-    }
-
+    // CRONÔMETRO
     {% if sala.status == 'andamento' and sala.inicio_atividades %}
     function atualizarCronometro() {
         const dataInicio = new Date("{{ sala.inicio_atividades.isoformat }}").getTime();
-        const duracaoMinutos = {{ sala.duracao_horas }};
-        const tempoLimite = dataInicio + (duracaoMinutos * 60 * 1000); 
+        const tempoLimite = dataInicio + ({{ sala.duracao_horas }} * 60 * 1000);
         const agora = new Date().getTime();
         const faltam = tempoLimite - agora;
 
-        if (faltam <= 0) {
-            document.getElementById('contagem').innerHTML = "TEMPO ESGOTADO";
-            document.getElementById('contagem').style.color = "#e53e3e";
-            return;
-        }
+        if (faltam <= 0) { location.reload(); return; }
 
-        const h = Math.floor(faltam / (1000 * 60 * 60));
-        const m = Math.floor((faltam % (1000 * 60 * 60)) / (1000 * 60));
-        const s = Math.floor((faltam % (1000 * 60)) / 1000);
-
-        document.getElementById('contagem').innerHTML = 
-            `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        const h = Math.floor(faltam / 3600000);
+        const m = Math.floor((faltam % 3600000) / 60000);
+        const s = Math.floor((faltam % 60000) / 1000);
+        document.getElementById('contagem').innerHTML = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     }
     setInterval(atualizarCronometro, 1000);
     atualizarCronometro();
     {% endif %}
 
-    if (chatBox) {
-        setInterval(buscarMensagens, 4000);
-        buscarMensagens();
+    // CHAT (Síncrono com seu backend)
+    function buscarMensagens() {
+        fetch(`/chat/mensagens/{{ sala.id }}/`).then(res => res.json()).then(data => {
+            const chat = document.getElementById('chat-box');
+            chat.innerHTML = '';
+            data.mensagens.forEach(msg => {
+                chat.innerHTML += `<div><small><b>${msg.usuario}</b></small><p style="margin:0 0 8px 0;">${msg.texto}</p></div>`;
+            });
+            chat.scrollTop = chat.scrollHeight;
+        });
     }
+    setInterval(buscarMensagens, 4000);
+    buscarMensagens();
+
+    document.getElementById('btn-enviar').onclick = function() {
+        const texto = document.getElementById('msg-texto').value;
+        const formData = new FormData();
+        formData.append('texto', texto);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        fetch(`/chat/enviar/{{ sala.id }}/`, { method: 'POST', body: formData }).then(() => {
+            document.getElementById('msg-texto').value = '';
+            buscarMensagens();
+        });
+    };
 </script>
 {% endblock %}

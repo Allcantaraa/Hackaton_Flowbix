@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto; padding: 20px; font-family: sans-serif;">
+    
+    <header style="border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px;">
+        <a href="{% url 'detalhes_sala' sala.id %}" style="text-decoration: none; color: #666;">← Voltar para a Sala</a>
+        <h1 style="margin-top: 10px;">👨‍⚖️ Painel de Avaliação: {{ sala.nome }}</h1>
+        <p>Avaliando como: <strong>{{ user.username }}</strong></p>
+    </header>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding: 15px; background: #d4edda; color: #155724; border-radius: 5px; margin-bottom: 20px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div style="display: grid; gap: 20px;">
+        {% for gp in grupos %}
+            <div style="background: white; border: 1px solid #ddd; padding: 20px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                
+                <div>
+                    <h3 style="margin-top: 0;">{{ gp.nome }}</h3>
+                    <p><strong>Tema:</strong> {{ gp.tema.titulo }}</p>
+                    <p><strong>Líder:</strong> {{ gp.lider.username }}</p>
+                    <hr>
+                    <p><strong>Link do Projeto:</strong></p>
+                    <a href="{{ gp.entrega.link_projeto }}" target="_blank" 
+                       style="display: inline-block; background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                        🔗 Acessar Solução do Grupo
+                    </a>
+                    <p style="margin-top: 15px; font-style: italic; color: #666;">
+                        "{{ gp.entrega.comentarios|default:'Sem comentários do grupo.' }}"
+                    </p>
+                </div>
+
+                <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="grupo_id" value="{{ gp.id }}">
+                        
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nota (0.00 a 10.00):</label>
+                        <input type="number" name="nota" step="0.01" min="0" max="10" required 
+                               style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
+                        
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Feedback para a Equipe:</label>
+                        <textarea name="comentario" rows="3" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+                        
+                        <button type="submit" style="width: 100%; background: #27ae60; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                            Salvar Avaliação
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            <div style="text-align: center; padding: 50px; border: 2px dashed #ccc; color: #888;">
+                <h3>Nenhuma entrega realizada até o momento.</h3>
+                <p>Os grupos aparecerão aqui assim que os líderes enviarem os links.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

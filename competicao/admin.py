@@ -8,7 +8,7 @@ class SalaAdmin(admin.ModelAdmin):
 
 @admin.register(Tema)
 class TemaAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'sala')
+    list_display = ('titulo', )
 
 @admin.register(Grupo)
 class GrupoAdmin(admin.ModelAdmin):
